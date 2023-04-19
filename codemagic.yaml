@@ -1,0 +1,62 @@
+definitions:
+  env_versions: &env_versions
+    xcode: 14.2
+  triggering:
+    push: &push_event
+      events:
+        - push
+  scripts:
+    - &initializeSubmodules
+      name: Initialize Submodules
+      script: make dependencies
+    - &bundleInstall
+      name: Bundle Install
+      script: |
+        bundle config path vendor/bundle
+        bundle install --jobs 4 --retry 3
+    - &buildAndTest
+      name: Build and Test
+      script: |
+        bundle exec fastlane scan \
+            --scheme Signal \
+            --output_types junit \
+            --skip_package_dependencies_resolution \
+            --disable_package_automatic_updates \
+            --xcargs '-test-timeouts-enabled YES -maximum-test-execution-time-allowance 60' \
+            || formatFailures
+workflows:
+  ios-mac-pro-workflow:
+    name: iOS Mac Pro Workflow
+    instance_type: mac_pro
+    environment:
+      <<: *env_versions
+    triggering:
+      <<: *push_event
+    scripts:
+      - bundle update --bundler
+      - *initializeSubmodules
+      - *bundleInstall
+      - *buildAndTest
+  ios-m1-mac-mini-workflow:
+    name: iOS M1 Mac Mini Workflow
+    instance_type: mac_mini_m1
+    environment:
+      <<: *env_versions
+    triggering:
+      <<: *push_event
+    scripts:
+      - bundle update --bundler
+      - *initializeSubmodules
+      - *bundleInstall
+      - *buildAndTest
+  ios-m2-mac-mini-workflow:
+    name: iOS M2 Mac Mini Workflow
+    environment:
+      <<: *env_versions
+    triggering:
+      <<: *push_event
+    scripts:
+      - bundle update --bundler
+      - *initializeSubmodules
+      - *bundleInstall
+      - *buildAndTest
