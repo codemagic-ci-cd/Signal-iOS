@@ -14,13 +14,16 @@ workflows:
         inputs:
         - content: bundle config path vendor/bundle && bundle install --jobs 4 --retry 3
     - script@1:
-        title: Building projects
+        title: Build and test
         inputs:
-        - content: time xcodebuild clean build -workspace "Signal.xcworkspace" -scheme "Signal" -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 14,OS=16.2'
-    - script@1:
-        title: Running tests
-        inputs:
-        - content: time xcodebuild clean test -workspace "Signal.xcworkspace" -scheme "Signal" -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 14,OS=16.2'
+        - content: | 
+            bundle exec fastlane scan \
+            --scheme Signal \
+            --output_types junit \
+            --skip_package_dependencies_resolution \
+            --disable_package_automatic_updates \
+            --xcargs '-test-timeouts-enabled YES -maximum-test-execution-time-allowance 60' \
+            || formatFailures
 meta:
   bitrise.io:
     stack: osx-xcode-14.2.x-ventura
