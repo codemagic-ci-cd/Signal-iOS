@@ -1,0 +1,29 @@
+name: Xcode - Build and Analyze
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: Build and analyse default scheme using xcodebuild command
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Initialize Submodules
+        run: make dependencies
+      - name: Bundle Install
+        run: bundle config path vendor/bundle && bundle install --jobs 4 --retry 3
+      - name: Build and test
+        run: | 
+            bundle exec fastlane scan \
+            --scheme Signal \
+            --output_types junit \
+            --skip_package_dependencies_resolution \
+            --disable_package_automatic_updates \
+            --xcargs '-test-timeouts-enabled YES -maximum-test-execution-time-allowance 60' \
+            || formatFailures
