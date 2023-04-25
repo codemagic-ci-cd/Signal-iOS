@@ -1,0 +1,27 @@
+format_version: "11"
+default_step_lib_source: https://github.com/bitrise-io/bitrise-steplib.git
+project_type: other
+workflows:
+  benchmark:
+    steps:
+    - git-clone@8: {}
+    - script@1:
+        title: Initialize Submodules
+        inputs:
+        - content: make dependencies
+    - script@1:
+        title: Bundle Install
+        inputs:
+        - content: bundle config path vendor/bundle && bundle install --jobs 4 --retry 3
+    - script@1:
+        title: Building projects
+        inputs:
+        - content: time xcodebuild clean build -workspace "Signal.xcworkspace" -scheme "Signal" -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 14,OS=16.2'
+    - script@1:
+        title: Running tests
+        inputs:
+        - content: time xcodebuild clean test -workspace "Signal.xcworkspace" -scheme "Signal" -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 14,OS=16.2'
+meta:
+  bitrise.io:
+    stack: osx-xcode-14.2.x-ventura
+    machine_type_id: g2-m1.8core
