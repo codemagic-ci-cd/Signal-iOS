@@ -196,14 +196,6 @@ public class RemoteConfig: BaseFlags {
     }
 
     @objc
-    public static var changePhoneNumberUI: Bool {
-        if DebugFlags.forceChangePhoneNumberUI.get() {
-            return true
-        }
-        return isEnabled(.changePhoneNumberUI)
-    }
-
-    @objc
     public static var stories: Bool {
         if DebugFlags.forceStories {
             return true
@@ -484,7 +476,6 @@ private struct Flags {
         case senderKeyKillSwitch
         case messageResendKillSwitch
         case donorBadgeDisplayKillSwitch
-        case changePhoneNumberUI
         case groupRings2
         case inboundGroupRingsKillSwitch
         case storiesKillSwitch
@@ -863,12 +854,13 @@ private extension ServiceRemoteConfigManager {
             if let minimumVersions = minimumVersions {
                 Logger.info("Minimum client versions: \(minimumVersions)")
 
+                let db = DependenciesBridge.shared.db
                 if let remoteExpirationDate = remoteExpirationDate(minimumVersions: minimumVersions) {
                     Logger.info("Setting client expiration date: \(remoteExpirationDate)")
-                    AppExpiry.shared.setExpirationDateForCurrentVersion(remoteExpirationDate)
+                    AppExpiry.shared.setExpirationDateForCurrentVersion(remoteExpirationDate, db: db)
                 } else {
                     Logger.info("Clearing client expiration date")
-                    AppExpiry.shared.setExpirationDateForCurrentVersion(nil)
+                    AppExpiry.shared.setExpirationDateForCurrentVersion(nil, db: db)
                 }
             }
         }

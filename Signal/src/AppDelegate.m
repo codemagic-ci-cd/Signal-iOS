@@ -12,7 +12,6 @@
 #import <SignalCoreKit/Cryptography.h>
 #import <SignalCoreKit/NSData+OWS.h>
 #import <SignalCoreKit/SignalCoreKit-Swift.h>
-#import <SignalMessaging/AppSetup.h>
 #import <SignalMessaging/DebugLogger.h>
 #import <SignalMessaging/Environment.h>
 #import <SignalMessaging/OWSContactsManager.h>
@@ -30,7 +29,6 @@
 #import <SignalServiceKit/OWSMath.h>
 #import <SignalServiceKit/OWSMessageManager.h>
 #import <SignalServiceKit/OWSReceiptManager.h>
-#import <SignalServiceKit/SSKEnvironment.h>
 #import <SignalServiceKit/SignalServiceKit-Swift.h>
 #import <SignalServiceKit/StickerInfo.h>
 #import <SignalServiceKit/TSAccountManager.h>

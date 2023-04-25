@@ -130,7 +130,7 @@ extension RecipientPickerViewController {
             comment: "Full width label displayed when attempting to compose message"
         )
         titleLabel.textColor = Theme.primaryTextColor
-        titleLabel.font = .ows_semiboldFont(withSize: ScaleFromIPhone5To7Plus(17, 20))
+        titleLabel.font = .semiboldFont(ofSize: ScaleFromIPhone5To7Plus(17, 20))
         titleLabel.textAlignment = .center
         titleLabel.lineBreakMode = .byWordWrapping
         titleLabel.numberOfLines = 0
@@ -141,7 +141,7 @@ extension RecipientPickerViewController {
             comment: "Full width label displayed when attempting to compose message"
         )
         subtitleLabel.textColor = Theme.secondaryTextAndIconColor
-        subtitleLabel.font = .ows_regularFont(withSize: ScaleFromIPhone5To7Plus(12, 14))
+        subtitleLabel.font = .regularFont(ofSize: ScaleFromIPhone5To7Plus(12, 14))
         subtitleLabel.textAlignment = .center
         subtitleLabel.lineBreakMode = .byWordWrapping
         subtitleLabel.numberOfLines = 0
@@ -184,7 +184,7 @@ extension RecipientPickerViewController {
 
             let label = UILabel()
             label.text = title
-            label.font = .ows_regularFont(withSize: 17)
+            label.font = .regularFont(ofSize: 17)
             label.textColor = Theme.primaryTextColor
             label.lineBreakMode = .byTruncatingTail
 
@@ -385,10 +385,12 @@ extension RecipientPickerViewController {
 
     private func contactAccessDeniedReminderItem() -> OWSTableItem {
         return OWSTableItem(customCellBlock: {
-            let reminderView = ReminderView.nag(
+            let reminderView = ReminderView(
+                style: .warning,
                 text: OWSLocalizedString(
                     "COMPOSE_SCREEN_MISSING_CONTACTS_PERMISSION",
-                    comment: "Multi-line label explaining why compose-screen contact picker is empty."),
+                    comment: "Multi-line label explaining why compose-screen contact picker is empty."
+                ),
                 tapAction: { CurrentAppContext().openSystemSettings() }
             )
 
@@ -1033,10 +1035,7 @@ extension RecipientPickerViewController {
                     transaction: transaction.asV2Write
                 )
 
-                self.storageServiceManager.recordPendingUpdates(
-                    updatedAccountIds: [recipient.accountId],
-                    authedAccount: .implicit()
-                )
+                self.storageServiceManager.recordPendingUpdates(updatedAccountIds: [recipient.accountId])
             } else {
                 // If we have a better identifier for this address, we can
                 // throw away any stored username info for it.

@@ -175,7 +175,9 @@ let kAudioNotificationsThrottleInterval: TimeInterval = 5
 
 extension UserNotificationPresenter {
     var hasReceivedSyncMessageRecently: Bool {
-        return OWSDeviceManager.shared().hasReceivedSyncMessage(inLastSeconds: 60)
+        return DependenciesBridge.shared.deviceManager.hasReceivedSyncMessage(
+            inLastSeconds: 60
+        )
     }
 }
 
@@ -504,6 +506,14 @@ public class NotificationPresenter: NSObject, NotificationsProtocol {
 
             // Always notify for replies to group stories you sent
             if storyAuthorAddress.isLocalAddress { return true }
+
+            // Always notify if you have been @mentioned
+            if
+                let mentionedUuids = incomingMessage.bodyRanges?.mentions.values,
+                let localUuid = tsAccountManager.localUuid,
+                mentionedUuids.contains(where: { $0 == localUuid }) {
+                return true
+            }
 
             // Notify people who did not author the story if they've previously replied to it
             return InteractionFinder.hasLocalUserReplied(

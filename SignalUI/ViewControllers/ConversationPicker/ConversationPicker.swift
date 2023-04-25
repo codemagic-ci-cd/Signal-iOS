@@ -1092,7 +1092,7 @@ private class VideoSegmentingTooltipView: TooltipView {
     public override func bubbleContentView() -> UIView {
         let label = UILabel()
         label.text = text
-        label.font = .ows_dynamicTypeFootnoteClamped
+        label.font = .dynamicTypeFootnoteClamped
         label.textColor = .ows_white
         label.numberOfLines = 0
 
@@ -1433,7 +1433,7 @@ public class ConversationPickerSelection: Dependencies {
         }
 
         Logger.info("Batch updating identity keys for \(recipients.count) selected recipients.")
-        identityManager.batchUpdateIdentityKeys(addresses: recipients, authedAccount: .implicit()).done {
+        identityManager.batchUpdateIdentityKeys(addresses: recipients).done {
             Logger.info("Successfully batch updated identity keys.")
         }.catch { error in
             owsFailDebug("Failed to batch update identity keys: \(error)")

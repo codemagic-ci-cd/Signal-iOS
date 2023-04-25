@@ -105,7 +105,6 @@ public class GRDBSchemaMigrator: NSObject {
 
     private static func hasCreatedInitialSchema(transaction: GRDBReadTransaction) throws -> Bool {
         let appliedMigrations = try DatabaseMigrator().appliedIdentifiers(transaction.database)
-        Logger.info("appliedMigrations: \(appliedMigrations.sorted()).")
         return appliedMigrations.contains(MigrationId.createInitialSchema.rawValue)
     }
 
@@ -220,6 +219,8 @@ public class GRDBSchemaMigrator: NSObject {
         case dropUsernameColumnFromOWSUserProfile
         case migrateVoiceMessageDrafts
         case addIsPniCapableColumnToOWSUserProfile
+        case addStoryMessageReplyCount
+        case populateStoryMessageReplyCount
 
         // NOTE: Every time we add a migration id, consider
         // incrementing grdbSchemaVersionLatest.
@@ -277,7 +278,7 @@ public class GRDBSchemaMigrator: NSObject {
     }
 
     public static let grdbSchemaVersionDefault: UInt = 0
-    public static let grdbSchemaVersionLatest: UInt = 54
+    public static let grdbSchemaVersionLatest: UInt = 55
 
     // An optimization for new users, we have the first migration import the latest schema
     // and mark any other migrations as "already run".
@@ -2041,16 +2042,15 @@ public class GRDBSchemaMigrator: NSObject {
             // used by gift badge and receipt credential redemption jobs.
             //
             // Any old jobs should specify Stripe as their processor.
-
             try transaction.database.alter(table: "model_SSKJobRecord") { (table: TableAlteration) in
                 table.add(column: "paymentProcessor", .text)
             }
 
             let populateSql = """
                 UPDATE model_SSKJobRecord
-                SET \(jobRecordColumn: .paymentProcessor) = 'STRIPE'
-                WHERE \(jobRecordColumn: .recordType) = \(SDSRecordType.sendGiftBadgeJobRecord.rawValue)
-                OR \(jobRecordColumn: .recordType) = \(SDSRecordType.receiptCredentialRedemptionJobRecord.rawValue)
+                SET \(JobRecord.columnName(.paymentProcessor)) = 'STRIPE'
+                WHERE \(JobRecord.columnName(.recordType)) = \(SendGiftBadgeJobRecord.recordType)
+                OR \(JobRecord.columnName(.recordType)) = \(ReceiptCredentialRedemptionJobRecord.recordType)
             """
             try transaction.database.execute(sql: populateSql)
 
@@ -2149,6 +2149,61 @@ public class GRDBSchemaMigrator: NSObject {
                 table.add(column: "isPniCapable", .boolean).notNull().defaults(to: false)
             }
 
+            return .success(())
+        }
+
+        migrator.registerMigration(.addStoryMessageReplyCount) { transaction in
+            try transaction.database.alter(table: "model_StoryMessage") { table in
+                table.add(column: "replyCount", .integer).notNull().defaults(to: 0)
+            }
+            return .success(())
+        }
+
+        migrator.registerMigration(.populateStoryMessageReplyCount) { transaction in
+            let storyMessagesSql = """
+                SELECT id, timestamp, authorUuid, groupId
+                FROM model_StoryMessage
+            """
+            let storyMessages = try Row.fetchAll(transaction.database, sql: storyMessagesSql)
+            for storyMessage in storyMessages {
+                guard
+                    let id = storyMessage["id"] as? Int64,
+                    let timestamp = storyMessage["timestamp"] as? Int64,
+                    let authorUuid = storyMessage["authorUuid"] as? String
+                else {
+                    continue
+                }
+                guard authorUuid != "00000000-0000-0000-0000-000000000001" else {
+                    // Skip the system story
+                    continue
+                }
+                let groupId = storyMessage["groupId"] as? Data
+                let isGroupStoryMessage = groupId != nil
+                // Use the index we have on storyTimestamp, storyAuthorUuidString, isGroupStoryReply
+                let replyCountSql = """
+                    SELECT COUNT(*)
+                    FROM model_TSInteraction
+                    WHERE (
+                        storyTimestamp = ?
+                        AND storyAuthorUuidString = ?
+                        AND isGroupStoryReply = ?
+                    )
+                """
+                let replyCount = try Int.fetchOne(
+                    transaction.database,
+                    sql: replyCountSql,
+                    arguments: [timestamp, authorUuid, isGroupStoryMessage]
+                ) ?? 0
+
+                try transaction.database.execute(
+                    sql: """
+                        UPDATE model_StoryMessage
+                        SET replyCount = ?
+                        WHERE id = ?
+                    """,
+                    arguments: [replyCount, id]
+                )
+            }
             return .success(())
         }
 
@@ -2306,10 +2361,7 @@ public class GRDBSchemaMigrator: NSObject {
 
             while let thread = try cursor.next() {
                 if let thread = thread as? TSContactThread {
-                    Self.storageServiceManager.recordPendingUpdates(
-                        updatedAddresses: [thread.contactAddress],
-                        authedAccount: .implicit()
-                    )
+                    Self.storageServiceManager.recordPendingUpdates(updatedAddresses: [thread.contactAddress])
                 } else if let thread = thread as? TSGroupThread {
                     Self.storageServiceManager.recordPendingUpdates(groupModel: thread.groupModel)
                 } else {
@@ -2577,10 +2629,7 @@ public class GRDBSchemaMigrator: NSObject {
                 accountsToRemove.insert(account)
             }
 
-            storageServiceManager.recordPendingUpdates(
-                updatedAddresses: accountsToRemove.map { $0.recipientAddress },
-                authedAccount: .implicit()
-            )
+            storageServiceManager.recordPendingUpdates(updatedAddresses: accountsToRemove.map { $0.recipientAddress })
             return .success(())
         }
 

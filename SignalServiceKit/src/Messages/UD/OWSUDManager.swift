@@ -204,10 +204,11 @@ public class OWSUDManagerImpl: NSObject, OWSUDManager {
 
     // MARK: Local Configuration State
 
-    private let kUDCurrentSenderCertificateKey_Production = "kUDCurrentSenderCertificateKey_Production-uuid"
-    private let kUDCurrentSenderCertificateKey_Staging = "kUDCurrentSenderCertificateKey_Staging-uuid"
-    private let kUDCurrentSenderCertificateDateKey_Production = "kUDCurrentSenderCertificateDateKey_Production-uuid"
-    private let kUDCurrentSenderCertificateDateKey_Staging = "kUDCurrentSenderCertificateDateKey_Staging-uuid"
+    // These keys contain the word "Production" for historical reasons, but
+    // they store sender certificates in both production & staging builds.
+    private let kUDCurrentSenderCertificateKey = "kUDCurrentSenderCertificateKey_Production-uuid"
+    private let kUDCurrentSenderCertificateDateKey = "kUDCurrentSenderCertificateDateKey_Production-uuid"
+
     private let kUDUnrestrictedAccessKey = "kUDUnrestrictedAccessKey"
 
     // MARK: Recipient State
@@ -544,26 +545,17 @@ public class OWSUDManagerImpl: NSObject, OWSUDManager {
         senderCertificates: SenderCertificates
     ) -> OWSUDSendingAccess {
         databaseStorage.read { transaction in
-            let senderCertificate: SenderCertificate
+            let shouldSharePhoneNumber: Bool
             switch phoneNumberSharingMode {
             case .everybody:
-                senderCertificate = senderCertificates.defaultCert
-            case .contactsOnly:
-                let address = SignalServiceAddress(serviceId)
-                if Self.contactsManager.isSystemContact(address: address, transaction: transaction) {
-                    senderCertificate = senderCertificates.defaultCert
-                    break
-                }
-                fallthrough
+                shouldSharePhoneNumber = true
             case .nobody:
-                if identityManager.shouldSharePhoneNumber(with: serviceId, transaction: transaction) {
-                    senderCertificate = senderCertificates.defaultCert
-                    break
-                }
-                senderCertificate = senderCertificates.uuidOnlyCert
+                shouldSharePhoneNumber = identityManager.shouldSharePhoneNumber(with: serviceId, transaction: transaction)
             }
-
-            return OWSUDSendingAccess(udAccess: udAccess, senderCertificate: senderCertificate)
+            return OWSUDSendingAccess(
+                udAccess: udAccess,
+                senderCertificate: shouldSharePhoneNumber ? senderCertificates.defaultCert : senderCertificates.uuidOnlyCert
+            )
         }
     }
 
@@ -589,7 +581,7 @@ public class OWSUDManagerImpl: NSObject, OWSUDManager {
             guard let certificateDate = certificateDateValue else {
                 return nil
             }
-            guard certificateDate.timeIntervalSinceNow < kDayInterval else {
+            guard -certificateDate.timeIntervalSinceNow < kDayInterval else {
                 // Discard certificates that we obtained more than 24 hours ago.
                 return nil
             }
@@ -630,7 +622,7 @@ public class OWSUDManagerImpl: NSObject, OWSUDManager {
     }
 
     private func senderCertificateKey(uuidOnly: Bool) -> String {
-        let baseKey = TSConstants.isUsingProductionService ? kUDCurrentSenderCertificateKey_Production : kUDCurrentSenderCertificateKey_Staging
+        let baseKey = kUDCurrentSenderCertificateKey
         if uuidOnly {
             return "\(baseKey)-withoutPhoneNumber"
         } else {
@@ -639,7 +631,7 @@ public class OWSUDManagerImpl: NSObject, OWSUDManager {
     }
 
     private func senderCertificateDateKey(uuidOnly: Bool) -> String {
-        let baseKey = TSConstants.isUsingProductionService ? kUDCurrentSenderCertificateDateKey_Production : kUDCurrentSenderCertificateDateKey_Staging
+        let baseKey = kUDCurrentSenderCertificateDateKey
         if uuidOnly {
             return "\(baseKey)-withoutPhoneNumber"
         } else {
@@ -706,7 +698,7 @@ public class OWSUDManagerImpl: NSObject, OWSUDManager {
 
     private func isValidCertificate(_ certificate: SenderCertificate) -> Bool {
         let sender = certificate.sender
-        guard sender.deviceId == tsAccountManager.storedDeviceId() else {
+        guard sender.deviceId == tsAccountManager.storedDeviceId else {
             Logger.warn("Sender certificate has incorrect device ID")
             return false
         }
@@ -814,9 +806,9 @@ public class OWSUDManagerImpl: NSObject, OWSUDManager {
 
 // MARK: -
 
+/// These are persisted to disk, so they must remain stable.
 @objc
 public enum PhoneNumberSharingMode: Int {
-    case everybody
-    case contactsOnly
-    case nobody
+    case everybody = 0
+    case nobody = 2
 }

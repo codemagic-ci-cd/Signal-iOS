@@ -98,10 +98,6 @@ public class FeatureFlags: BaseFlags {
         return false
     }
 
-    // TODO: remove this once we are confident we won't wanna undo it
-    // with a single line code change.
-    public static let useNewRegistrationFlow: Bool = true
-
     public static let textFormattingReceiveSupport: Bool = build.includes(.internal)
 
     public static let periodicallyCheckDatabaseIntegrity: Bool = build.includes(.internal)
@@ -122,6 +118,9 @@ public class FeatureFlags: BaseFlags {
             logFlag("FeatureFlag", key, value)
         }
     }
+
+    @objc
+    public static let editMessageReceive: Bool = false
 }
 
 // MARK: -
@@ -468,11 +467,6 @@ public class DebugFlags: BaseFlags {
                                                                toggleHandler: { _ in
         databaseStorage.read { messageDecrypter.schedulePlaceholderCleanup(transaction: $0)}
     })
-
-    @objc
-    public static let forceChangePhoneNumberUI = TestableFlag(build.includes(.beta),
-                                                              title: LocalizationNotNeeded("Force 'change phone number' UI."),
-                                                              details: LocalizationNotNeeded("The UI will appear in settings."))
 
     @objc
     public static let deviceTransferPreserveOldDevice = false

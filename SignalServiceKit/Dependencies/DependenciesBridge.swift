@@ -41,6 +41,8 @@ public class DependenciesBridge {
 
     public let changePhoneNumberPniManager: ChangePhoneNumberPniManager
 
+    public let deviceManager: OWSDeviceManager
+
     public let kbsCredentialStorage: KBSAuthCredentialStorage
     public let keyBackupService: KeyBackupService
 
@@ -51,7 +53,7 @@ public class DependenciesBridge {
     public let usernameValidationManager: UsernameValidationManager
 
     /// Initialize and configure the ``DependenciesBridge`` singleton.
-    fileprivate static func setupSingleton(
+    public static func setupSingleton(
         accountServiceClient: AccountServiceClient,
         databaseStorage: SDSDatabaseStorage,
         identityManager: OWSIdentityManager,
@@ -101,6 +103,20 @@ public class DependenciesBridge {
         self.db = SDSDB(databaseStorage: databaseStorage)
         self.keyValueStoreFactory = SDSKeyValueStoreFactory()
 
+        self.changePhoneNumberPniManager = ChangePhoneNumberPniManagerImpl(
+            schedulers: schedulers,
+            identityManager: ChangePhoneNumberPniManagerImpl.Wrappers.IdentityManager(identityManager),
+            messageSender: ChangePhoneNumberPniManagerImpl.Wrappers.MessageSender(messageSender),
+            preKeyManager: ChangePhoneNumberPniManagerImpl.Wrappers.PreKeyManager(),
+            pniSignedPreKeyStore: ChangePhoneNumberPniManagerImpl.Wrappers.SignedPreKeyStore(pniProtocolStore.signedPreKeyStore),
+            tsAccountManager: ChangePhoneNumberPniManagerImpl.Wrappers.TSAccountManager(tsAccountManager)
+        )
+
+        self.deviceManager = OWSDeviceManagerImpl(
+            databaseStorage: db,
+            keyValueStoreFactory: keyValueStoreFactory
+        )
+
         self.kbsCredentialStorage = KBSAuthCredentialStorageImpl(keyValueStoreFactory: keyValueStoreFactory)
         self.keyBackupService = KeyBackupServiceImpl(
             accountManager: KBS.Wrappers.TSAccountManager(tsAccountManager),
@@ -115,15 +131,6 @@ public class DependenciesBridge {
             syncManager: syncManager,
             tsConstants: tsConstants,
             twoFAManager: KBS.Wrappers.OWS2FAManager(ows2FAManager)
-        )
-
-        self.changePhoneNumberPniManager = ChangePhoneNumberPniManagerImpl(
-            schedulers: schedulers,
-            identityManager: ChangePhoneNumberPniManagerImpl.Wrappers.IdentityManager(identityManager),
-            messageSender: ChangePhoneNumberPniManagerImpl.Wrappers.MessageSender(messageSender),
-            preKeyManager: ChangePhoneNumberPniManagerImpl.Wrappers.PreKeyManager(),
-            pniSignedPreKeyStore: ChangePhoneNumberPniManagerImpl.Wrappers.SignedPreKeyStore(pniProtocolStore.signedPreKeyStore),
-            tsAccountManager: ChangePhoneNumberPniManagerImpl.Wrappers.TSAccountManager(tsAccountManager)
         )
 
         self.registrationSessionManager = RegistrationSessionManagerImpl(
@@ -149,51 +156,6 @@ public class DependenciesBridge {
                 storageServiceManager: Usernames.Validation.Wrappers.StorageServiceManager(storageServiceManager),
                 usernameLookupManager: usernameLookupManager
             )
-        )
-    }
-}
-
-// MARK: - Singleton setup during app setup
-
-/// An `@objc` static wrapper for setting up ``DependenciesBridge``. Intended
-/// for use during app setup.
-@objc
-public class DependenciesBridgeSetup: NSObject {
-
-    /// Set up the ``DependenciesBridge`` singleton. See that class for more
-    /// details as to its purpose.
-    ///
-    /// Important that this happen during app setup, to ensure that singletons
-    /// in ``DependenciesBridge`` are available to singletons downstream in the
-    /// app setup dependencies graph.
-    @objc
-    static func setupSingleton(
-        accountServiceClient: AccountServiceClient,
-        databaseStorage: SDSDatabaseStorage,
-        identityManager: OWSIdentityManager,
-        messageProcessor: MessageProcessor,
-        messageSender: MessageSender,
-        networkManager: NetworkManager,
-        ows2FAManager: OWS2FAManager,
-        pniProtocolStore: SignalProtocolStore,
-        signalService: OWSSignalServiceProtocol,
-        storageServiceManager: StorageServiceManager,
-        syncManager: SyncManagerProtocol,
-        tsAccountManager: TSAccountManager
-    ) {
-        DependenciesBridge.setupSingleton(
-            accountServiceClient: accountServiceClient,
-            databaseStorage: databaseStorage,
-            identityManager: identityManager,
-            messageProcessor: messageProcessor,
-            messageSender: messageSender,
-            networkManager: networkManager,
-            ows2FAManager: ows2FAManager,
-            pniProtocolStore: pniProtocolStore,
-            signalService: signalService,
-            storageServiceManager: storageServiceManager,
-            syncManager: syncManager,
-            tsAccountManager: tsAccountManager
         )
     }
 }

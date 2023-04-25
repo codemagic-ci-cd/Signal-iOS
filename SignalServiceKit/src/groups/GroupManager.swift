@@ -330,7 +330,7 @@ public class GroupManager: NSObject {
                                                                             transaction: transaction)
             }
 
-            self.profileManager.addThread(toProfileWhitelist: thread, authedAccount: .implicit())
+            self.profileManager.addThread(toProfileWhitelist: thread)
 
             if shouldSendMessage {
                 return firstly {
@@ -1486,7 +1486,7 @@ public class GroupManager: NSObject {
                                                                transaction: transaction)
 
         if inProfileWhitelist {
-            profileManager.addThread(toProfileWhitelist: groupThreadV2, authedAccount: .implicit())
+            profileManager.addThread(toProfileWhitelist: groupThreadV2)
         }
         if isBlocked {
             blockingManager.addBlockedGroup(groupModel: newGroupModelV2,
@@ -1860,7 +1860,7 @@ public class GroupManager: NSObject {
     /// our profile key credential from the service until we've uploaded a profile
     /// key commitment to the service.
     public static func ensureLocalProfileHasCommitmentIfNecessary() -> Promise<Void> {
-        guard tsAccountManager.isOnboarded() else {
+        guard tsAccountManager.isOnboarded else {
             return Promise.value(())
         }
         guard let localAddress = self.tsAccountManager.localAddress else {

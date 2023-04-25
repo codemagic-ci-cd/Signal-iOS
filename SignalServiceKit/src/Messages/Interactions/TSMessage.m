@@ -309,6 +309,9 @@ static const NSUInteger OWSMessageSchemaVersion = 4;
 
 - (nullable SignalServiceAddress *)storyAuthorAddress
 {
+    if (self.storyAuthorUuidString == nil) {
+        return nil;
+    }
     return [[SignalServiceAddress alloc] initWithUuidString:self.storyAuthorUuidString];
 }
 
@@ -627,7 +630,7 @@ static const NSUInteger OWSMessageSchemaVersion = 4;
 
     [self ensurePerConversationExpirationWithTransaction:transaction];
 
-    [self touchStoryMessageIfNecessaryWithTransaction:transaction];
+    [self touchStoryMessageIfNecessaryWithReplyCountIncrement:ReplyCountIncrementNewReplyAdded transaction:transaction];
 }
 
 - (void)anyWillUpdateWithTransaction:(SDSAnyWriteTransaction *)transaction
@@ -647,7 +650,7 @@ static const NSUInteger OWSMessageSchemaVersion = 4;
 
     [self ensurePerConversationExpirationWithTransaction:transaction];
 
-    [self touchStoryMessageIfNecessaryWithTransaction:transaction];
+    [self touchStoryMessageIfNecessaryWithReplyCountIncrement:ReplyCountIncrementNoIncrement transaction:transaction];
 }
 
 - (void)ensurePerConversationExpirationWithTransaction:(SDSAnyWriteTransaction *)transaction
@@ -700,21 +703,7 @@ static const NSUInteger OWSMessageSchemaVersion = 4;
 
     [self removeAllMentionsWithTransaction:transaction];
 
-    [self touchStoryMessageIfNecessaryWithTransaction:transaction];
-}
-
-- (void)touchStoryMessageIfNecessaryWithTransaction:(SDSAnyWriteTransaction *)transaction
-{
-    if (!self.isStoryReply) {
-        return;
-    }
-
-    StoryMessage *_Nullable storyMessage = [StoryFinder storyWithTimestamp:self.storyTimestamp.unsignedLongLongValue
-                                                                    author:self.storyAuthorAddress
-                                                               transaction:transaction];
-    if (storyMessage) {
-        [self.databaseStorage touchStoryMessage:storyMessage transaction:transaction];
-    }
+    [self touchStoryMessageIfNecessaryWithReplyCountIncrement:ReplyCountIncrementReplyDeleted transaction:transaction];
 }
 
 - (void)removeAllAttachmentsWithTransaction:(SDSAnyWriteTransaction *)transaction

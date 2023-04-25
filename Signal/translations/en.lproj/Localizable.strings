@@ -178,6 +178,12 @@
 /* Button to try launching the app even though the last launch failed */
 "APP_LAUNCH_FAILURE_CONTINUE" = "Open Signal Instead";
 
+/* Message for an error indicating that the app couldn't launch because some unexpected error happened with the user's registration status. */
+"APP_LAUNCH_FAILURE_CORRUPT_REGISTRATION_MESSAGE" = "Please send a debug log to support@signal.org so that we can troubleshoot this issue.";
+
+/* Title for an error indicating that the app couldn't launch because some unexpected error happened with the user's registration status. */
+"APP_LAUNCH_FAILURE_CORRUPT_REGISTRATION_TITLE" = "Couldn’t Open Signal";
+
 /* Error indicating that the app could not launch because the database could not be loaded. */
 "APP_LAUNCH_FAILURE_COULD_NOT_LOAD_DATABASE" = "Could Not Load Database";
 
@@ -1652,7 +1658,10 @@
 "DEREGISTRATION_REREGISTER_WITH_SAME_PHONE_NUMBER" = "Re-register this phone number";
 
 /* Label warning the user that they have been de-registered. */
-"DEREGISTRATION_WARNING" = "Device no longer registered. Your phone number may be registered with Signal on a different device. Tap to re-register.";
+"DEREGISTRATION_WARNING" = "This device is no longer registered. This is likely because you registered your phone number with Signal on a different device.";
+
+/* If the user has been deregistered, they'll see a warning. This is This is the call to action on that warning. */
+"DEREGISTRATION_WARNING_ACTION_TITLE" = "Re-Register Device";
 
 /* {{Short Date}} when device last communicated with Signal Server. */
 "DEVICE_LAST_ACTIVE_AT_LABEL" = "Last active %@";
@@ -1662,6 +1671,12 @@
 
 /* Alert title that can occur when viewing device manager. */
 "DEVICE_LIST_UPDATE_FAILED_TITLE" = "Failed to update device list.";
+
+/* A label for this device in the device list. */
+"DEVICE_NAME_THIS_DEVICE" = "This Device";
+
+/* A label for an unnamed device in the device list. */
+"DEVICE_NAME_UNNAMED_DEVICE" = "Unnamed Device";
 
 /* The stop action of the dialog asking the user if they want to cancel a device transfer */
 "DEVICE_TRANSFER_CANCEL_CONFIRMATION_ACTION" = "Stop Transfer";
@@ -2273,10 +2288,16 @@
 "EXIT_REREGISTRATION" = "Exit Registration";
 
 /* Label notifying the user that the app has expired. */
-"EXPIRATION_ERROR" = "Your version of Signal has expired! Tap to update to the most recent version.";
+"EXPIRATION_ERROR" = "This version of Signal has expired. Update to send and receive messages.";
+
+/* If the user's app is too old, they'll be shown a warning asking them to upgrade. This is the text on the warning, and tapping it will open the App Store page for Signal. */
+"EXPIRATION_WARNING_ACTION_TITLE" = "Update Now";
+
+/* Label warning the user that the app will expire soon. Embeds {{date}}. */
+"EXPIRATION_WARNING_SOON" = "This version of Signal will expire on %1$@. Update to keep messaging.";
 
 /* Label warning the user that the app will expire today. */
-"EXPIRATION_WARNING_TODAY" = "Your version of Signal will expire today. Tap to update to the most recent version.";
+"EXPIRATION_WARNING_TODAY" = "This version of Signal will expire today. Update to keep messaging.";
 
 /* action sheet header when re-sending message which failed because of too many attempts */
 "FAILED_SENDING_BECAUSE_RATE_LIMIT" = "Too many failures with this contact. Please try again later.";
@@ -4735,12 +4756,6 @@
 /* A format for a label showing an example phone number. Embeds {{the example phone number}}. */
 "PHONE_NUMBER_EXAMPLE_FORMAT" = "Example: %@";
 
-/* A user friendly name for the 'contacts only' phone number sharing mode. */
-"PHONE_NUMBER_SHARING_CONTACTS_ONLY" = "My Contacts";
-
-/* A user friendly description of the 'contacts only' phone number sharing mode. */
-"PHONE_NUMBER_SHARING_CONTACTS_ONLY_DESCRIPTION" = "Only your contacts will see your phone number on Signal.";
-
 /* A user friendly name for the 'everybody' phone number sharing mode. */
 "PHONE_NUMBER_SHARING_EVERYBODY" = "Everybody";
 
@@ -5340,6 +5355,9 @@
 
 /* During registration, users are asked to enter their phone number. This is the title on that screen. */
 "REGISTRATION_PHONE_NUMBER_TITLE" = "Your Phone Number";
+
+/* Message for confirmation alert when requesting a voice code during phone number registration. */
+"REGISTRATION_PHONE_NUMBER_VOICE_CODE_ALERT_MESSAGE" = "You’ll receive a call to verify this number. Is your phone number above correct?";
 
 /* Label for the phone number textfield */
 "REGISTRATION_PHONENUMBER_BUTTON" = "Phone Number";
@@ -7223,13 +7241,13 @@
 "UNLINK_CONFIRMATION_ALERT_TITLE" = "Unlink \"%@\"?";
 
 /* Label warning the user that they have been unlinked from their primary device. */
-"UNLINKED_WARNING" = "Device no longer linked. Re-link Signal with your phone to continue messaging.";
+"UNLINKED_WARNING" = "This device is no longer linked. Re-link Signal with your phone to continue messaging.";
+
+/* If this device has become unlinked from their primary device, they'll see a warning. This is the call to action on that warning. */
+"UNLINKED_WARNING_ACTION_TITLE" = "Re-Link Device";
 
 /* Alert title when unlinking device fails */
 "UNLINKING_FAILED_ALERT_TITLE" = "Signal was unable to unlink your device.";
-
-/* Label text in device manager for a device with no name */
-"UNNAMED_DEVICE" = "Unnamed Device";
 
 /* Pressing this button un-pins a thread */
 "UNPIN_ACTION" = "Unpin";

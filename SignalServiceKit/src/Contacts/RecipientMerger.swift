@@ -145,10 +145,7 @@ class RecipientMergerImpl: RecipientMerger {
         case .some(let updatedRecipient):
             mergedRecipient = updatedRecipient
             dataStore.updateRecipient(mergedRecipient, transaction: transaction)
-            storageServiceManager.recordPendingUpdates(
-                updatedAccountIds: [mergedRecipient.accountId],
-                authedAccount: .implicit()
-            )
+            storageServiceManager.recordPendingUpdates(updatedAccountIds: [mergedRecipient.accountId])
         case .none:
             mergedRecipient = SignalRecipient(serviceId: ServiceIdObjC(serviceId), phoneNumber: E164ObjC(phoneNumber))
             dataStore.insertRecipient(mergedRecipient, transaction: transaction)
@@ -287,12 +284,12 @@ class RecipientMergerImpl: RecipientMerger {
         // (Note that we don't check for PNI sessions; we always prefer the ACI session there.)
         let hasSessionForServiceId = temporaryShims.hasActiveSignalProtocolSession(
             recipientId: serviceIdRecipient.accountId,
-            deviceId: Int32(OWSDevicePrimaryDeviceId),
+            deviceId: Int32(OWSDevice.primaryDeviceId),
             transaction: transaction
         )
         let hasSessionForPhoneNumber = temporaryShims.hasActiveSignalProtocolSession(
             recipientId: phoneNumberRecipient.accountId,
-            deviceId: Int32(OWSDevicePrimaryDeviceId),
+            deviceId: Int32(OWSDevice.primaryDeviceId),
             transaction: transaction
         )
 

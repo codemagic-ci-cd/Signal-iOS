@@ -95,12 +95,26 @@ public class AppVersion {
         }
     }
 
+    public let buildDate: Date
+
     // MARK: - Setup
 
     private init(bundle: Bundle, userDefaults: UserDefaults) {
         self.currentAppReleaseVersion = bundle.string(forInfoDictionaryKey: "CFBundleShortVersionString")
         self.currentAppBuildVersion = bundle.string(forInfoDictionaryKey: "CFBundleVersion")
         self.currentAppVersion4 = bundle.string(forInfoDictionaryKey: "OWSBundleVersion4")
+
+        if
+            let rawBuildDetails = bundle.app.object(forInfoDictionaryKey: "BuildDetails"),
+            let buildDetails = rawBuildDetails as? [String: Any],
+            let buildTimestamp = buildDetails["Timestamp"] as? TimeInterval {
+            self.buildDate = Date(timeIntervalSince1970: buildTimestamp)
+        } else {
+            #if !TESTABLE_BUILD
+            owsFailBeta("Expected a build date to be defined. Assuming build date is right now")
+            #endif
+            self.buildDate = Date()
+        }
 
         self.userDefaults = userDefaults
     }
@@ -196,8 +210,8 @@ public class AppVersion {
 
         let largestCount = max(lhsComponents.count, rhsComponents.count)
         for index in (0..<largestCount) {
-            let lhsComponent = parseVersionComponent(lhsComponents[index])
-            let rhsComponent = parseVersionComponent(rhsComponents[index])
+            let lhsComponent = parseVersionComponent(lhsComponents[safe: index])
+            let rhsComponent = parseVersionComponent(rhsComponents[safe: index])
             if lhsComponent != rhsComponent {
                 return (lhsComponent < rhsComponent) ? .orderedAscending : .orderedDescending
             }

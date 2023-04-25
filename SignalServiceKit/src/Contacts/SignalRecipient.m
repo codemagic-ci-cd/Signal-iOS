@@ -4,9 +4,7 @@
 //
 
 #import "SignalRecipient.h"
-#import "OWSDevice.h"
 #import "ProfileManagerProtocol.h"
-#import "SSKEnvironment.h"
 #import "TSAccountManager.h"
 #import <SignalServiceKit/SignalServiceKit-Swift.h>
 
@@ -92,10 +90,10 @@ const uint64_t SignalRecipientDistantPastUnregisteredTimestamp = 1;
 
     // Since we use device count to determine whether a user is registered or not,
     // ensure the local user always has at least *this* device.
-    if (![_devices containsObject:@(OWSDevicePrimaryDeviceId)]) {
+    if (![_devices containsObject:@(OWSDeviceObjc.primaryDeviceId)]) {
         if (self.address.isLocalAddress) {
             OWSLogInfo(@"Adding primary device to self recipient.");
-            [self addDevices:[NSSet setWithObject:@(OWSDevicePrimaryDeviceId)] source:SignalRecipientSourceLocal];
+            [self addDevices:[NSSet setWithObject:@(OWSDeviceObjc.primaryDeviceId)] source:SignalRecipientSourceLocal];
         }
     }
 
@@ -197,8 +195,7 @@ const uint64_t SignalRecipientDistantPastUnregisteredTimestamp = 1;
     self.unregisteredAtTimestamp = unregisteredAtTimestamp;
 
     if (source != SignalRecipientSourceStorageService) {
-        [self.storageServiceManager recordPendingUpdatesWithUpdatedAccountIds:@[ self.accountId ]
-                                                                authedAccount:AuthedAccount.implicit];
+        [self.storageServiceManager recordPendingUpdatesWithUpdatedAccountIds:@[ self.accountId ]];
     }
 }
 
@@ -318,8 +315,7 @@ const uint64_t SignalRecipientDistantPastUnregisteredTimestamp = 1;
     [super anyDidRemoveWithTransaction:transaction];
 
     [self.modelReadCaches.signalRecipientReadCache didRemoveSignalRecipient:self transaction:transaction];
-    [self.storageServiceManager recordPendingUpdatesWithUpdatedAccountIds:@[ self.accountId ]
-                                                            authedAccount:AuthedAccount.implicit];
+    [self.storageServiceManager recordPendingUpdatesWithUpdatedAccountIds:@[ self.accountId ]];
 }
 
 + (TSFTSIndexMode)FTSIndexMode

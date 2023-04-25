@@ -15,18 +15,26 @@ import Foundation
 /// This cache changes all of its properties in lockstep, which
 /// helps ensure consistency.  e.g. isRegistered is true IFF
 /// localNumber is non-nil.
-@objcMembers
 class TSAccountState: NSObject {
-    let localNumber: String?
-    let localUuid: UUID?
-    let localPni: UUID?
+    let localIdentifiers: LocalIdentifiers?
+
+    @objc
+    var localNumber: String? { localIdentifiers?.phoneNumber }
+
+    @objc
+    var localUuid: UUID? { localIdentifiers?.aci.uuidValue }
+
+    @objc
+    var localPni: UUID? { localIdentifiers?.pni?.uuidValue }
+
+    @objc
     let deviceId: UInt32
 
     let isReregistering: Bool
     let reregistrationPhoneNumber: String?
     let reregistrationUUID: UUID?
 
-    let isRegistered: Bool
+    var isRegistered: Bool { localIdentifiers != nil }
     let isDeregistered: Bool
     let isOnboarded: Bool
     let registrationDate: Date?
@@ -39,6 +47,7 @@ class TSAccountState: NSObject {
     let hasDefinedIsDiscoverableByPhoneNumber: Bool
     let lastSetIsDiscoverableByPhoneNumberAt: Date
 
+    @objc
     init(
         transaction: SDSAnyReadTransaction,
         keyValueStore: SDSKeyValueStore
@@ -71,9 +80,19 @@ class TSAccountState: NSObject {
         // Do not use data migrations to update TSAccountState data; do it through schema migrations
         // or through normal write transactions. TSAccountManager should be the only code accessing this state anyway.
 
-        localNumber = getString(TSAccountManager_RegisteredNumberKey)
-        localUuid = getUuid(TSAccountManager_RegisteredUUIDKey)
-        localPni = getUuid(TSAccountManager_RegisteredPNIKey)
+        localIdentifiers = {
+            guard let localNumber = getString(TSAccountManager_RegisteredNumberKey) else {
+                return nil
+            }
+            guard let localAci = getUuid(TSAccountManager_RegisteredUUIDKey) else {
+                return nil
+            }
+            return LocalIdentifiers(
+                aci: ServiceId(localAci),
+                pni: getUuid(TSAccountManager_RegisteredPNIKey).map { ServiceId($0) },
+                phoneNumber: localNumber
+            )
+        }()
         deviceId = getUInt32(TSAccountManager_DeviceIdKey) ?? 1
 
         reregistrationPhoneNumber = getString(TSAccountManager_ReregisteringPhoneNumberKey)
@@ -82,7 +101,6 @@ class TSAccountState: NSObject {
         // TODO: Support re-registration with only reregistrationUUID.
         isReregistering = reregistrationPhoneNumber != nil
 
-        isRegistered = localNumber != nil
         isDeregistered = getBool(TSAccountManager_IsDeregisteredKey) ?? false
         isOnboarded = getBool(TSAccountManager_IsOnboardedKey) ?? false
         registrationDate = getDate(TSAccountManager_RegistrationDateKey)
@@ -104,7 +122,7 @@ class TSAccountState: NSObject {
             // flag will be NO until you have successfully registered (aka defined
             // a local phone number).
             if FeatureFlags.phoneNumberDiscoverability {
-                isDiscoverableByDefault = isRegistered
+                isDiscoverableByDefault = localIdentifiers != nil
             }
 
             isDiscoverableByPhoneNumber = persistedIsDiscoverable ?? isDiscoverableByDefault

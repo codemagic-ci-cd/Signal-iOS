@@ -7,7 +7,6 @@
 #import "AppContext.h"
 #import "OWSFileSystem.h"
 #import "ProfileManagerProtocol.h"
-#import "SSKEnvironment.h"
 #import "TSAccountManager.h"
 #import <SignalCoreKit/Cryptography.h>
 #import <SignalCoreKit/NSData+OWS.h>
@@ -864,11 +863,9 @@ NSString *NSStringForUserProfileWriter(UserProfileWriter userProfileWriter)
                 if (localAddress == nil) {
                     localAddress = self.tsAccountManager.localAddress;
                 }
-                [self.storageServiceManager recordPendingUpdatesWithUpdatedAddresses:@[ localAddress ]
-                                                                       authedAccount:authedAccount];
+                [self.storageServiceManager recordPendingUpdatesWithUpdatedAddresses:@[ localAddress ]];
             } else {
-                [self.storageServiceManager recordPendingUpdatesWithUpdatedAddresses:@[ self.address ]
-                                                                       authedAccount:authedAccount];
+                [self.storageServiceManager recordPendingUpdatesWithUpdatedAddresses:@[ self.address ]];
             }
         }];
     }

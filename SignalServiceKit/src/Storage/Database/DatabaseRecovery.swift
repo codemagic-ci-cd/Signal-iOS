@@ -319,7 +319,7 @@ public extension DatabaseRecovery {
             DisappearingMessagesConfigurationRecord.databaseTableName,
             // We don't want to get our linked devices wrong.
             // We *could* fetch these from the server. Could be a good followup change.
-            OWSDevice.table.tableName
+            OWSDevice.databaseTableName
         ]
 
         /// Copy tables that must be copied flawlessly. Operation throws if any tables fail.
@@ -419,7 +419,7 @@ public extension DatabaseRecovery {
             MessageSendLog.Payload.databaseTableName,
             MessageSendLog.Recipient.databaseTableName,
             // We'd rather not try to resurrect jobs, as they may result in unintended behavior (e.g., a bad message send).
-            JobRecordRecord.databaseTableName,
+            JobRecord.databaseTableName,
             PendingReadReceiptRecord.databaseTableName,
             PendingViewedReceiptRecord.databaseTableName,
             OWSMessageContentJob.table.tableName, // also, this one is deprecated

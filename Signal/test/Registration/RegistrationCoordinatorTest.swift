@@ -296,7 +296,12 @@ public class RegistrationCoordinatorTest: XCTestCase {
         ))
 
         func expectedAuthedAccount() -> AuthedAccount {
-            return .explicit(aci: identityResponse.aci, e164: Stubs.e164, authPassword: authPassword)
+            return .explicit(
+                aci: identityResponse.aci,
+                pni: identityResponse.pni,
+                e164: Stubs.e164,
+                authPassword: authPassword
+            )
         }
 
         // When registered, it should try and sync push tokens.
@@ -425,7 +430,12 @@ public class RegistrationCoordinatorTest: XCTestCase {
             ))
 
             func expectedAuthedAccount() -> AuthedAccount {
-                return .explicit(aci: identityResponse.aci, e164: Stubs.e164, authPassword: authPassword)
+                return .explicit(
+                    aci: identityResponse.aci,
+                    pni: identityResponse.pni,
+                    e164: Stubs.e164,
+                    authPassword: authPassword
+                )
             }
 
             // When registered, it should try and sync push tokens.
@@ -777,7 +787,12 @@ public class RegistrationCoordinatorTest: XCTestCase {
             }
 
             func expectedAuthedAccount() -> AuthedAccount {
-                return .explicit(aci: identityResponse.aci, e164: Stubs.e164, authPassword: authPassword)
+                return .explicit(
+                    aci: identityResponse.aci,
+                    pni: identityResponse.pni,
+                    e164: Stubs.e164,
+                    authPassword: authPassword
+                )
             }
 
             // When registered at t=3, it should try and sync push tokens. Succeed at t=4
@@ -945,7 +960,12 @@ public class RegistrationCoordinatorTest: XCTestCase {
             )
 
             func expectedAuthedAccount() -> AuthedAccount {
-                return .explicit(aci: accountIdentityResponse.aci, e164: Stubs.e164, authPassword: authPassword)
+                return .explicit(
+                    aci: accountIdentityResponse.aci,
+                    pni: accountIdentityResponse.pni,
+                    e164: Stubs.e164,
+                    authPassword: authPassword
+                )
             }
 
             // When registered at t=2, it should try and sync push tokens.
@@ -1254,7 +1274,12 @@ public class RegistrationCoordinatorTest: XCTestCase {
             }
 
             func expectedAuthedAccount() -> AuthedAccount {
-                return .explicit(aci: accountIdentityResponse.aci, e164: Stubs.e164, authPassword: authPassword)
+                return .explicit(
+                    aci: accountIdentityResponse.aci,
+                    pni: accountIdentityResponse.pni,
+                    e164: Stubs.e164,
+                    authPassword: authPassword
+                )
             }
 
             // Once we are registered at t=8, we should try and sync push tokens
@@ -2970,6 +2995,7 @@ public class RegistrationCoordinatorTest: XCTestCase {
                     remainingAttempts: remainingAttempts
                 ),
                 error: error,
+                contactSupportMode: .v2WithUnknownReglockState,
                 exitConfiguration: mode.pinExitConfig
             )
         }
@@ -2981,6 +3007,7 @@ public class RegistrationCoordinatorTest: XCTestCase {
             return RegistrationPinState(
                 operation: .enteringExistingPin(skippability: .canSkip, remainingAttempts: nil),
                 error: error,
+                contactSupportMode: .v2WithUnknownReglockState,
                 exitConfiguration: mode.pinExitConfig
             )
         }
@@ -3077,6 +3104,7 @@ public class RegistrationCoordinatorTest: XCTestCase {
             return RegistrationPinState(
                 operation: .enteringExistingPin(skippability: .unskippable, remainingAttempts: nil),
                 error: error,
+                contactSupportMode: .v2WithReglock,
                 exitConfiguration: mode.pinExitConfig
             )
         }
@@ -3091,6 +3119,7 @@ public class RegistrationCoordinatorTest: XCTestCase {
                     remainingAttempts: nil
                 ),
                 error: error,
+                contactSupportMode: .v2NoReglock,
                 exitConfiguration: mode.pinExitConfig
             )
         }
@@ -3102,6 +3131,7 @@ public class RegistrationCoordinatorTest: XCTestCase {
             return RegistrationPinState(
                 operation: .creatingNewPin,
                 error: nil,
+                contactSupportMode: .v2NoReglock,
                 exitConfiguration: exitConfigOverride ?? mode.pinExitConfig
             )
         }
@@ -3114,6 +3144,7 @@ public class RegistrationCoordinatorTest: XCTestCase {
             return RegistrationPinState(
                 operation: .confirmingNewPin(.stub()),
                 error: error,
+                contactSupportMode: .v2NoReglock,
                 exitConfiguration: exitConfigOverride ?? mode.pinExitConfig
             )
         }

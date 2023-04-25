@@ -14,7 +14,6 @@
 #import "NotificationsProtocol.h"
 #import "OWSCallMessageHandler.h"
 #import "OWSContact.h"
-#import "OWSDevice.h"
 #import "OWSDisappearingConfigurationUpdateInfoMessage.h"
 #import "OWSDisappearingMessagesConfiguration.h"
 #import "OWSDisappearingMessagesJob.h"
@@ -26,7 +25,6 @@
 #import "OWSRecordTranscriptJob.h"
 #import "OWSUnknownProtocolVersionMessage.h"
 #import "ProfileManagerProtocol.h"
-#import "SSKEnvironment.h"
 #import "TSAccountManager.h"
 #import "TSAttachment.h"
 #import "TSAttachmentPointer.h"
@@ -446,7 +444,7 @@ NS_ASSUME_NONNULL_BEGIN
                  serverDeliveryTimestamp:request.serverDeliveryTimestamp
                              transaction:transaction];
 
-            [[OWSDeviceManager shared] setHasReceivedSyncMessage];
+            [OWSDeviceManagerObjcBridge setHasReceivedSyncMessageWithTransaction:transaction];
             break;
         case OWSMessageManagerMessageTypeDataMessage:
             [self handleIncomingEnvelope:request.envelope
@@ -513,6 +511,14 @@ NS_ASSUME_NONNULL_BEGIN
             //
             // See: OWSMessageManager.preprocessEnvelope(envelope:plaintext:transaction:)
             break;
+        case OWSMessageManagerMessageTypeEditMessage:
+            if (SSKFeatureFlags.editMessageReceive) {
+                [self handleIncomingEnvelope:request.envelope
+                             withEditMessage:contentProto.editMessage
+                             wasReceivedByUD:request.wasReceivedByUD
+                     serverDeliveryTimestamp:request.serverDeliveryTimestamp
+                                 transaction:transaction];
+            }
         case OWSMessageManagerMessageTypeUnknown:
             OWSLogWarn(@"Ignoring envelope. Content with no known payload");
             break;
@@ -1622,7 +1628,7 @@ NS_ASSUME_NONNULL_BEGIN
                 if (groupId != nil) {
                     [self.profileManager addGroupIdToProfileWhitelist:groupId];
                 } else {
-                    [self.profileManager addUserToProfileWhitelist:destination authedAccount:AuthedAccount.implicit];
+                    [self.profileManager addUserToProfileWhitelist:destination];
                 }
             }
 

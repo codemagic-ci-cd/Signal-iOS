@@ -63,6 +63,7 @@ public struct RegistrationPinState: Equatable {
 
     let operation: RegistrationPinOperation
     let error: RegistrationPinValidationError?
+    let contactSupportMode: ContactSupportRegistrationPINMode
 
     public enum ExitConfiguration: Equatable {
         case noExitAllowed
@@ -266,7 +267,7 @@ class RegistrationPinViewController: OWSViewController {
     private lazy var pinValidationLabel: UILabel = {
         let result = UILabel()
         result.textAlignment = .center
-        result.font = .ows_dynamicTypeCaption1Clamped
+        result.font = .dynamicTypeCaption1Clamped
         return result
     }()
 
@@ -290,7 +291,7 @@ class RegistrationPinViewController: OWSViewController {
 
     private static func flatButton() -> OWSFlatButton {
         let result = OWSFlatButton()
-        result.setTitle(font: .ows_dynamicTypeSubheadlineClamped)
+        result.setTitle(font: .dynamicTypeSubheadlineClamped)
         result.setBackgroundColors(upColor: .clear)
         result.enableMultilineLabel()
         result.button.clipsToBounds = true
@@ -612,7 +613,7 @@ class RegistrationPinViewController: OWSViewController {
                 fromFormat: format,
                 attributedFormatArgs: [.string(
                     attemptRemainingString,
-                    attributes: [.font: ActionSheetController.messageLabelFont.ows_semibold]
+                    attributes: [.font: ActionSheetController.messageLabelFont.semibold()]
                 )],
                 defaultAttributes: [.font: ActionSheetController.messageLabelFont]
             )
@@ -701,10 +702,8 @@ class RegistrationPinViewController: OWSViewController {
         }
 
         actionSheet.addAction(.init(title: CommonStrings.contactSupport) { [weak self] _ in
-            let vc = ContactSupportViewController()
-            vc.selectedFilter = .other
-            let navigationVc = OWSNavigationController(rootViewController: vc)
-            self?.present(navigationVc, animated: true)
+            guard let self else { return }
+            ContactSupportAlert.showForRegistrationPINMode(self.state.contactSupportMode, from: self)
         })
 
         actionSheet.addAction(OWSActionSheets.cancelAction)

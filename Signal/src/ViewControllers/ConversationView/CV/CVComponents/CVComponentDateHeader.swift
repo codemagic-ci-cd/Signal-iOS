@@ -3,8 +3,8 @@
 // SPDX-License-Identifier: AGPL-3.0-only
 //
 
-import Foundation
 import SignalMessaging
+import SignalUI
 
 public class CVComponentDateHeader: CVComponentBase, CVRootComponent {
 
@@ -179,7 +179,7 @@ public class CVComponentDateHeader: CVComponentBase, CVRootComponent {
 
     private var titleLabelConfig: CVLabelConfig {
         return CVLabelConfig(text: dateHeaderState.text,
-                             font: UIFont.ows_dynamicTypeFootnote.ows_semibold,
+                             font: UIFont.dynamicTypeFootnote.semibold(),
                              textColor: Theme.secondaryTextAndIconColor,
                              lineBreakMode: .byTruncatingTail,
                              textAlignment: .center)

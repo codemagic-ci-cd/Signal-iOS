@@ -185,7 +185,7 @@ public class MessageProcessor: NSObject {
                 // We may have legacy decrypt jobs queued. We want to schedule them for
                 // processing immediately when we launch, so that we can drain the old queue.
                 do {
-                    let legacyDecryptJobRecords = try AnyJobRecordFinder<SSKMessageDecryptJobRecord>().allRecords(
+                    let legacyDecryptJobRecords = try AnyJobRecordFinder<LegacyMessageDecryptJobRecord>().allRecords(
                         label: "SSKMessageDecrypt",
                         status: .ready,
                         transaction: transaction
@@ -537,7 +537,8 @@ struct ProcessingRequest {
                 }
                 return receiptMessage.timestamp
             case .syncMessage, .dataMessage, .callMessage, .typingMessage, .nullMessage,
-                    .decryptionErrorMessage, .storyMessage, .hasSenderKeyDistributionMessage, .unknown:
+                    .decryptionErrorMessage, .storyMessage, .hasSenderKeyDistributionMessage,
+                    .editMessage, .unknown:
                 return nil
             }
         }

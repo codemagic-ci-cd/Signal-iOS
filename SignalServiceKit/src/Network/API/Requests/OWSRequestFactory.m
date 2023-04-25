@@ -6,10 +6,8 @@
 #import "OWSRequestFactory.h"
 #import "NSData+keyVersionByte.h"
 #import "OWS2FAManager.h"
-#import "OWSDevice.h"
 #import "OWSIdentityManager.h"
 #import "ProfileManagerProtocol.h"
-#import "SSKEnvironment.h"
 #import "SignedPrekeyRecord.h"
 #import "TSAccountManager.h"
 #import "TSRequest.h"
@@ -34,15 +32,6 @@ NSString *const OWSRequestKey_AuthKey = @"AuthKey";
     OWSAssertDebug(serverGuid.length > 0);
 
     NSString *path = [NSString stringWithFormat:@"v1/messages/uuid/%@", serverGuid];
-
-    return [TSRequest requestWithUrl:[NSURL URLWithString:path] method:@"DELETE" parameters:@{}];
-}
-
-+ (TSRequest *)deleteDeviceRequestWithDevice:(OWSDevice *)device
-{
-    OWSAssertDebug(device);
-
-    NSString *path = [NSString stringWithFormat:self.textSecureDevicesAPIFormat, @(device.deviceId)];
 
     return [TSRequest requestWithUrl:[NSURL URLWithString:path] method:@"DELETE" parameters:@{}];
 }
