@@ -76,7 +76,7 @@ workflows:
       - *initializeSubmodules
       - *bundleInstall
       - *buildAndTest
- ios-m2-mac-mini-parallel-workflow:
+  ios-m2-mac-mini-parallel-workflow:
     name: iOS M2 Mac Mini Workflow
     environment:
       <<: *env_versions
