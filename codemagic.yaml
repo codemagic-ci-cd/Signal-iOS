@@ -16,7 +16,7 @@ definitions:
         bundle install --jobs 4 --retry 3
     - &parallelTasks
       name: Parallel Tasks
-      script: ‘defaults write com.apple.Xcode PBXNumberOfParallelBuildSubtasks 8’
+      script: defaults write com.apple.Xcode PBXNumberOfParallelBuildSubtasks 8
     - &buildAndTest
       name: Build and Test
       script: |
@@ -40,8 +40,8 @@ workflows:
       - *initializeSubmodules
       - *bundleInstall
       - *buildAndTest
-  ios-m1-mac-mini-workflow:
-    name: iOS M1 Mac Mini Workflow
+  ios-mac-mini-m1-workflow:
+    name: iOS Mac mini M1 Workflow
     instance_type: mac_mini_m1
     environment:
       <<: *env_versions
@@ -52,8 +52,8 @@ workflows:
       - *initializeSubmodules
       - *bundleInstall
       - *buildAndTest
-  ios-m1-mac-mini-parallel-workflow:
-    name: iOS M1 Mac Mini Workflow
+  ios-mac-mini-m1-parallel-workflow:
+    name: iOS Mac mini M1 Parallel Workflow
     instance_type: mac_mini_m1
     environment:
       <<: *env_versions
@@ -65,8 +65,8 @@ workflows:
       - *bundleInstall
       - *parallelTasks
       - *buildAndTest
-  ios-m2-mac-mini-workflow:
-    name: iOS M2 Mac Mini Workflow
+  ios-mac-mini-m2-workflow:
+    name: iOS Mac mini M2 Workflow
     environment:
       <<: *env_versions
     triggering:
@@ -76,8 +76,8 @@ workflows:
       - *initializeSubmodules
       - *bundleInstall
       - *buildAndTest
-  ios-m2-mac-mini-parallel-workflow:
-    name: iOS M2 Mac Mini Workflow
+  ios-mac-mini-m2-parallel-workflow:
+    name: iOS Mac mini M2 Parallel Workflow
     environment:
       <<: *env_versions
     triggering:
