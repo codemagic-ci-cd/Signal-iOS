@@ -14,6 +14,9 @@ definitions:
       script: |
         bundle config path vendor/bundle
         bundle install --jobs 4 --retry 3
+    - &parallelTasks
+      name: Parallel Tasks
+      script: ‘defaults write com.apple.Xcode PBXNumberOfParallelBuildSubtasks 8’
     - &buildAndTest
       name: Build and Test
       script: |
@@ -49,6 +52,19 @@ workflows:
       - *initializeSubmodules
       - *bundleInstall
       - *buildAndTest
+  ios-m1-mac-mini-parallel-workflow:
+    name: iOS M1 Mac Mini Workflow
+    instance_type: mac_mini_m1
+    environment:
+      <<: *env_versions
+    triggering:
+      <<: *push_event
+    scripts:
+      - bundle update --bundler
+      - *initializeSubmodules
+      - *bundleInstall
+      - *parallelTasks
+      - *buildAndTest
   ios-m2-mac-mini-workflow:
     name: iOS M2 Mac Mini Workflow
     environment:
@@ -59,4 +75,16 @@ workflows:
       - bundle update --bundler
       - *initializeSubmodules
       - *bundleInstall
+      - *buildAndTest
+ ios-m2-mac-mini-parallel-workflow:
+    name: iOS M2 Mac Mini Workflow
+    environment:
+      <<: *env_versions
+    triggering:
+      <<: *push_event
+    scripts:
+      - bundle update --bundler
+      - *initializeSubmodules
+      - *bundleInstall
+      - *parallelTasks
       - *buildAndTest
